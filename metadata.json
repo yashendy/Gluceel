@@ -1,0 +1,5 @@
+{
+  "name": "Glucoview AI",
+  "description": "A smart dashboard for parents to monitor their children's glucose levels, log measurements, and view trends. It features AI-powered insights from Gemini to provide helpful summaries and identify patterns in the data.",
+  "requestFramePermissions": []
+}
