@@ -1,3 +1,7 @@
+css
++394
+-89
+
 /* css/style.css */
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
 
@@ -312,9 +316,6 @@ body {
     border-radius: 6px;
     font-size: 17px;
     font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
 .pill {
     background: #f6f8fe;
     border-radius: 999px;
@@ -325,8 +326,6 @@ body {
     border: 1px solid #e0e6f5;
 }
 
-.btn-create:hover {
-    background-color: #36a420;
 .toast {
     display: none;
     margin-top: 12px;
@@ -334,6 +333,143 @@ body {
     text-align: center;
 }
 
+/* ===== صفحة التسجيل الجديدة ===== */
+.register-page {
+    background: radial-gradient(circle at 15% 20%, rgba(31, 116, 240, 0.12), transparent 28%),
+                radial-gradient(circle at 85% 10%, rgba(255, 123, 84, 0.1), transparent 30%),
+                linear-gradient(180deg, #f7f9fe 0%, #f1f4fb 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    padding: 32px 18px 56px;
+}
+
+.register-shell {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 28px;
+    align-items: stretch;
+    width: 100%;
+}
+
+.register-hero {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 26px 28px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+}
+
+.register-hero h1 {
+    margin: 12px 0 10px;
+    font-size: 2rem;
+    color: #0f1f3f;
+}
+
+.register-hero .lede {
+    margin: 0 0 18px;
+    color: var(--muted-color);
+    line-height: 1.7;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.feature-card {
+    background: #f8fbff;
+    border: 1px solid #e0e8f7;
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+
+.feature-card h3 {
+    margin: 0 0 6px;
+    color: #0f1f3f;
+}
+
+.feature-card p {
+    margin: 0;
+    color: #2c3c58;
+    line-height: 1.6;
+}
+
+.policy-note {
+    margin-top: 14px;
+    background: #fff7ed;
+    border: 1px solid #ffd9b5;
+    color: #9b4d00;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.register-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.role-switch {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.role-label {
+    font-weight: 800;
+    color: #0f1f3f;
+}
+
+.role-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #d7dbe5;
+    border-radius: 12px;
+    background: #f9fbff;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 700;
+    color: #1f2b46;
+}
+
+.role-pill input { accent-color: var(--primary-color); }
+
+.back-link {
+    display: inline-block;
+    margin-top: 6px;
+}
+
+.btn-create:hover {
+    background-color: #36a420;
 /* ===== التخطيط القديم لضمان التوافق مع صفحات التسجيل ===== */
 .main-container {
     display: flex;
@@ -369,6 +505,9 @@ body {
     .login-shell { grid-template-columns: 1fr; padding: 32px 18px 48px; }
     .auth-panel { order: -1; }
     .hero h1 { font-size: 1.9rem; }
+
+    .register-shell { grid-template-columns: 1fr; }
+    .register-page { padding-top: 24px; }
 }
 
 /* التجاوب مع الموبايل */
@@ -391,9 +530,15 @@ body {
     .branding-section { padding-bottom: 20px; }
     .logo-text { font-size: 2.5rem; }
     .motivation-text { font-size: 1.2rem; }
+
+    .register-hero { text-align: center; }
+    .feature-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
     .auth-card { padding: 22px 18px; }
     .links-row { flex-direction: column; align-items: flex-start; }
+
+    .register-card { padding: 22px 18px; }
+    .register-shell { gap: 18px; }
 }
