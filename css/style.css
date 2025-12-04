@@ -50,6 +50,27 @@ body {
     color: var(--text-color);
 }
 
+.helper-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 18px;
+    margin-top: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.helper-card h2 {
+    margin: 0 0 10px;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.helper-card ul {
+    margin: 0;
+    padding: 0 20px;
+    color: #333;
+    line-height: 1.6;
+}
+
 /* الجزء اليسار: كارت الدخول */
 .login-section {
     flex: 0.8;
@@ -61,6 +82,30 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.status-banner {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #f0f4ff;
+    color: #0f3d91;
+    font-size: 0.95rem;
+    border: 1px solid #d8e2ff;
+    min-height: 20px;
+}
+
+.status-banner.error {
+    background: #fff5f5;
+    color: #b10000;
+    border-color: #ffc2c2;
+}
+
+.toast {
+    display: none;
+    margin-top: 10px;
+    color: red;
     text-align: center;
 }
 

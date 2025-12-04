@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>طلبات تفعيل الأطباء</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { display: block; background: #f7f9fb; }
+    .navbar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .nav-logo { font-size: 1.4rem; font-weight: bold; color: var(--primary-color); }
+    .logout-btn { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 5px; }
+
+    .page-container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    .card h2 { margin-top: 0; color: #222; }
+
+    .requests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+    .request-item { border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px; background: #fafafa; position: relative; }
+    .request-item h3 { margin: 0 0 5px; }
+    .request-item p { margin: 3px 0; color: #555; }
+    .status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; background: #fff3cd; color: #856404; margin-top: 8px; }
+    .actions { margin-top: 12px; display: flex; gap: 10px; }
+    .btn-approve { flex: 1; background: var(--secondary-color); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+    .btn-refresh { background: var(--primary-color); color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+    #toast { display:none; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo">لوحة الإدارة - سكري كيدز</div>
+    <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> خروج</button>
+  </nav>
+
+  <div class="page-container">
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+      <div>
+        <h2>طلبات تفعيل الأطباء</h2>
+        <p style="color:#555; margin:0;">راجع الحسابات المسجلة كأطباء وقم بتفعيلها.</p>
+      </div>
+      <button id="refreshBtn" class="btn-refresh"><i class="fas fa-rotate"></i> تحديث القائمة</button>
+    </div>
+
+    <div class="card">
+      <div id="requests" class="requests-grid">
+        <p style="grid-column:1/-1; text-align:center; color:#777;">جاري تحميل الطلبات...</p>
+      </div>
+      <div id="toast"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabase-config.js';
+
+    const requestsGrid = document.getElementById('requests');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const toast = document.getElementById('toast');
+
+    const showToast = (msg, isError = false) => {
+      toast.style.display = 'block';
+      toast.style.color = isError ? 'red' : 'green';
+      toast.textContent = msg;
+    };
+
+    async function ensureAdmin() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error || data?.role !== 'admin') {
+        window.location.href = 'index.html';
+        return null;
+      }
+
+      return session.user;
+    }
+
+    async function loadRequests() {
+      const user = await ensureAdmin();
+      if (!user) return;
+
+      requestsGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#777;">جاري التحميل...</p>';
+
+      const { data: doctors, error } = await supabase
+        .from('users')
+        .select('id,name,email,status')
+        .eq('role', 'doctor')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error(error);
+        requestsGrid.innerHTML = '<p style="color:red;">فشل تحميل البيانات</p>';
+        showToast('حدث خطأ أثناء تحميل الطلبات', true);
+        return;
+      }
+
+      if (!doctors || doctors.length === 0) {
+        requestsGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#777;">لا توجد طلبات حالياً</p>';
+        return;
+      }
+
+      requestsGrid.innerHTML = '';
+      doctors.forEach((doc) => {
+        const card = document.createElement('div');
+        card.className = 'request-item';
+        card.innerHTML = `
+          <h3>${doc.name || 'طبيب بدون اسم'}</h3>
+          <p><i class="fas fa-envelope"></i> ${doc.email}</p>
+          <span class="status">${doc.status === 'pending' ? 'قيد المراجعة' : doc.status}</span>
+          <div class="actions">
+            <button class="btn-approve" data-id="${doc.id}"><i class="fas fa-check"></i> تفعيل</button>
+          </div>
+        `;
+        requestsGrid.appendChild(card);
+      });
+    }
+
+    async function approveDoctor(userId) {
+      const { error } = await supabase
+        .from('users')
+        .update({ status: 'active' })
+        .eq('id', userId)
+        .eq('role', 'doctor');
+
+      if (error) {
+        showToast('فشل التفعيل: ' + error.message, true);
+      } else {
+        showToast('تم تفعيل الحساب بنجاح');
+        loadRequests();
+      }
+    }
+
+    requestsGrid.addEventListener('click', (e) => {
+      const approveBtn = e.target.closest('.btn-approve');
+      if (approveBtn) {
+        const id = approveBtn.getAttribute('data-id');
+        approveDoctor(id);
+      }
+    });
+
+    refreshBtn.addEventListener('click', loadRequests);
+
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    loadRequests();
+  </script>
+</body>
+</html>
