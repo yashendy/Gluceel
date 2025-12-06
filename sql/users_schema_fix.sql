@@ -12,6 +12,23 @@ create table if not exists public.users (
 );
 
 -- 2) فرض النوع والربط مع Auth
+-- ملحوظة: لو العمود مستخدم في سياسات RLS سابقة، نحذف السياسات مؤقتًا قبل تغيير النوع ثم نعيد إنشاءها لاحقًا
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_select_own') THEN
+    DROP POLICY users_select_own ON public.users;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_insert_own') THEN
+    DROP POLICY users_insert_own ON public.users;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_update_own') THEN
+    DROP POLICY users_update_own ON public.users;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_admin_full_access') THEN
+    DROP POLICY users_admin_full_access ON public.users;
+  END IF;
+END $$;
+
 alter table public.users
   alter column id type uuid using id::uuid,
   alter column id set not null;
