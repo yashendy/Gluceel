@@ -15,16 +15,39 @@ create table if not exists public.users (
 -- ملحوظة: لو العمود مستخدم في سياسات RLS سابقة، نحذف السياسات مؤقتًا قبل تغيير النوع ثم نعيد إنشاءها لاحقًا
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_select_own') THEN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_select_own'
+  ) THEN
     DROP POLICY users_select_own ON public.users;
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_insert_own') THEN
+
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_insert_own'
+  ) THEN
     DROP POLICY users_insert_own ON public.users;
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_update_own') THEN
+
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_update_own'
+  ) THEN
     DROP POLICY users_update_own ON public.users;
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_admin_full_access') THEN
+
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_admin_full_access'
+  ) THEN
     DROP POLICY users_admin_full_access ON public.users;
   END IF;
 END $$;
@@ -57,7 +80,12 @@ alter table public.users enable row level security;
 -- سياسة القراءة: يرى المستخدم صفه فقط
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_select_own') THEN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_select_own'
+  ) THEN
     CREATE POLICY users_select_own ON public.users
       FOR SELECT USING (id = auth.uid());
   END IF;
@@ -66,7 +94,12 @@ END $$;
 -- سياسة الإضافة: يضيف صف لنفسه فقط
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_insert_own') THEN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_insert_own'
+  ) THEN
     CREATE POLICY users_insert_own ON public.users
       FOR INSERT WITH CHECK (id = auth.uid());
   END IF;
@@ -75,7 +108,12 @@ END $$;
 -- سياسة التعديل: يعدّل صفه فقط
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_update_own') THEN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_update_own'
+  ) THEN
     CREATE POLICY users_update_own ON public.users
       FOR UPDATE USING (id = auth.uid());
   END IF;
@@ -85,7 +123,12 @@ END $$;
 -- يفترض وجود claim باسم role يساوي 'admin'
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE polname = 'users_admin_full_access') THEN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'users'
+      AND policyname = 'users_admin_full_access'
+  ) THEN
     CREATE POLICY users_admin_full_access ON public.users
       FOR ALL USING ((auth.jwt() ->> 'role') = 'admin');
   END IF;
