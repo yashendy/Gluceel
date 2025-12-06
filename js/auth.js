@@ -70,13 +70,23 @@ async function handleSignUp(email, password, name, role) {
 
       if (dbError) {
         console.error("خطأ في قاعدة البيانات:", dbError);
-        // لو حصل خطأ في الجدول، نحاول نمسح المستخدم من Auth عشان ميبقاش "معلق"
-        await supabase.auth.admin.deleteUser(authData.user.id); 
-        throw new Error("فشل حفظ بيانات الملف الشخصي. حاول مرة أخرى.");
+
+        // رسائل توضيح أسرع حسب الخطأ
+        const isTypeMismatch = dbError.message?.includes('uuid');
+        const isRlsBlocked = dbError.message?.toLowerCase()?.includes('violates row-level security');
+        const hint = isTypeMismatch
+          ? 'تأكد أن عمود id في جدول users نوعه uuid ومربوط بـ auth.users.'
+          : isRlsBlocked
+            ? 'فعّل RLS وأضف سياسات insert/select/update بحيث id = auth.uid().'
+            : 'راجع صلاحيات وسياسات جدول users في Supabase.';
+
+        // لا يمكن حذف المستخدم من Auth باستخدام anon key، لذا نظهر التنبيه فقط
+        showToast(`فشل حفظ بيانات الجدول: ${hint}`, true);
+        return;
       }
 
       showToast('تم إنشاء الحساب بنجاح! جاري الدخول...');
-      
+
       // انتظار بسيط ثم التحقق والتوجيه
       setTimeout(() => {
          checkAuth();
