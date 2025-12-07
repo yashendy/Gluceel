@@ -46,22 +46,26 @@ function isValidEmail(value) {
 /** تأكد أن Supabase جاهز */
 async function ensureSupabaseReady() {
   try {
-    if (!supabase || !supabase.auth) {
-      showToast('لم يتم تهيئة الاتصال بـ Supabase. تأكد من تحميل الملفات بشكل صحيح.', true);
-      showDebug('Supabase client غير مهيأ – تأكدي من مسار ملفات js/ واستخدام type="module".');
+    // نتأكد مبدئياً إن الكلاينت موجود
+    if (!supabase || !supabase.auth || typeof supabase.auth.signInWithPassword !== 'function') {
+      showToast('لم يتم تهيئة اتصال Supabase بشكل صحيح.', true);
+      showDebug('Supabase client غير مهيأ – تأكدي من مسار الملفات واستخدام type="module".');
       return false;
     }
 
-    const { error } = await supabase.auth.getSettings();
+    // نعمل نداء خفيف فقط للتأكد إن السيرفر بيرد
+    const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
 
+    // لو مفيش Error يبقى الاتصال سليم (حتى لو session = null)
     return true;
   } catch (err) {
-    showToast('تعذر الاتصال بـ Supabase. راجعي إعدادات المشروع.', true);
+    showToast('تعذر الاتصال بـ Supabase. راجعي إعدادات المشروع أو اتصال الإنترنت.', true);
     showDebug(`Supabase error: ${err.message}`);
     return false;
   }
 }
+
 
 /** التوجيه حسب الدور والحالة */
 function routeByRole(role, status) {
