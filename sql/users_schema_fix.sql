@@ -11,45 +11,19 @@ create table if not exists public.users (
   created_at timestamptz not null default now()
 );
 
--- 2) فرض النوع والربط مع Auth
--- ملحوظة: لو العمود مستخدم في سياسات RLS سابقة، نحذف السياسات مؤقتًا قبل تغيير النوع ثم نعيد إنشاءها لاحقًا
 DO $$
+DECLARE
+  pol record;
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_policies
+  -- نحذف كل سياسات RLS الموجودة على الجدول أيًا كان اسمها لتجنب تعارض النوع
+  FOR pol IN
+    SELECT policyname
+    FROM pg_policies
     WHERE schemaname = 'public'
       AND tablename = 'users'
-      AND policyname = 'users_select_own'
-  ) THEN
-    DROP POLICY users_select_own ON public.users;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'users'
-      AND policyname = 'users_insert_own'
-  ) THEN
-    DROP POLICY users_insert_own ON public.users;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'users'
-      AND policyname = 'users_update_own'
-  ) THEN
-    DROP POLICY users_update_own ON public.users;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'users'
-      AND policyname = 'users_admin_full_access'
-  ) THEN
-    DROP POLICY users_admin_full_access ON public.users;
-  END IF;
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.users', pol.policyname);
+  END LOOP;
 END $$;
 
 alter table public.users
